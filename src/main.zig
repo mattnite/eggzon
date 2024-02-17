@@ -98,7 +98,7 @@ fn parseNode(arena: std.mem.Allocator, parser: *Parser) error{ OutOfMemory, Synt
 
     // we tried all primitive types, the only thing left available is a dot-brace:
 
-    var s = parser.save();
+    const s = parser.save();
     errdefer parser.restore(s);
 
     try parser.accept(.@".");
@@ -127,7 +127,7 @@ fn parseNode(arena: std.mem.Allocator, parser: *Parser) error{ OutOfMemory, Synt
 }
 
 fn parseArray(arena: std.mem.Allocator, parser: *Parser) ![]Node {
-    var s = parser.save();
+    const s = parser.save();
     errdefer parser.restore(s);
 
     var list = std.ArrayList(Node).init(arena);
@@ -154,7 +154,7 @@ fn parseArray(arena: std.mem.Allocator, parser: *Parser) ![]Node {
 }
 
 fn parseObject(arena: std.mem.Allocator, parser: *Parser) !std.StringArrayHashMapUnmanaged(Node) {
-    var s = parser.save();
+    const s = parser.save();
     errdefer parser.restore(s);
 
     var object = std.StringArrayHashMapUnmanaged(Node){};
@@ -206,21 +206,21 @@ const Parser = struct {
     }
 
     pub fn accept(p: *Parser, comptime t: TokenType) !void {
-        var s = p.save();
+        const s = p.save();
         errdefer p.restore(s);
 
         _ = try p.core.accept(rules.is(t));
     }
 
     pub fn acceptNull(p: *Parser) !void {
-        var s = p.save();
+        const s = p.save();
         errdefer p.restore(s);
 
         _ = try p.core.accept(rules.is(.null));
     }
 
     pub fn acceptInt(p: *Parser) !i128 {
-        var s = p.save();
+        const s = p.save();
         errdefer p.restore(s);
 
         const negative = if (p.core.accept(rules.is(.@"-"))) |_|
@@ -235,7 +235,7 @@ const Parser = struct {
     }
 
     pub fn acceptBool(p: *Parser) !bool {
-        var s = p.save();
+        const s = p.save();
         errdefer p.restore(s);
 
         const tok = try p.core.accept(rules.oneOf(.{ .false, .true }));
@@ -243,7 +243,7 @@ const Parser = struct {
     }
 
     pub fn acceptChar(p: *Parser) !u21 {
-        var s = p.save();
+        const s = p.save();
         errdefer p.restore(s);
 
         const tok = try p.core.accept(rules.is(.character_literal));
@@ -270,7 +270,7 @@ const Parser = struct {
     }
 
     pub fn acceptString(p: *Parser, writer: anytype) !void {
-        var s = p.save();
+        const s = p.save();
         errdefer p.restore(s);
 
         const tok = try p.core.accept(rules.is(.string_literal));
@@ -283,7 +283,7 @@ const Parser = struct {
     }
 
     pub fn acceptEnumLiteral(p: *Parser, writer: anytype) !void {
-        var s = p.save();
+        const s = p.save();
         errdefer p.restore(s);
 
         _ = try p.core.accept(rules.is(.@"."));
@@ -291,7 +291,7 @@ const Parser = struct {
     }
 
     pub fn acceptIdentifier(p: *Parser, writer: anytype) !void {
-        var s = p.save();
+        const s = p.save();
         errdefer p.restore(s);
 
         _ = try p.acceptIdentifierInner(writer);
@@ -671,7 +671,7 @@ fn runStringTest(seq: []const StringTest) !void {
         };
         defer doc.deinit();
 
-        try std.testing.expectEqual(@as(std.meta.Tag(Node), .string), doc.root);
+        try std.testing.expectEqual(NodeTag.string, @as(NodeTag, doc.root));
         try std.testing.expectEqualStrings(pat[0], doc.root.string);
     }
 }
@@ -715,11 +715,13 @@ test "parse root string unicode literal" {
     });
 }
 
+const NodeTag = std.meta.Tag(Node);
+
 test "parse root enum literal" {
     var doc = try parseString(std.testing.allocator, ".foo");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .@"enum"), doc.root);
+    try std.testing.expectEqual(NodeTag.@"enum", @as(NodeTag, doc.root));
     try std.testing.expectEqualStrings("foo", doc.root.@"enum");
 }
 
@@ -727,7 +729,7 @@ test "parse root @ enum literal" {
     var doc = try parseString(std.testing.allocator, ".@\"match-maker\"");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .@"enum"), doc.root);
+    try std.testing.expectEqual(NodeTag.@"enum", @as(NodeTag, doc.root));
     try std.testing.expectEqualStrings("match-maker", doc.root.@"enum");
 }
 
@@ -742,7 +744,7 @@ test "parse root int array[4]" {
     var doc = try parseString(std.testing.allocator, ".{ 1, 2, 3, 4 }");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .array), doc.root);
+    try std.testing.expectEqual(NodeTag.array, @as(NodeTag, doc.root));
     try std.testing.expectEqual(@as(usize, 4), doc.root.array.len);
 
     for (0..4, 1..5) |index, val| {
@@ -754,7 +756,7 @@ test "parse root int array[4] trailing comma" {
     var doc = try parseString(std.testing.allocator, ".{ 1, 2, 3, 4, }");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .array), doc.root);
+    try std.testing.expectEqual(NodeTag.array, @as(NodeTag, doc.root));
     try std.testing.expectEqual(@as(usize, 4), doc.root.array.len);
 
     for (0..4, 1..5) |index, val| {
@@ -766,7 +768,7 @@ test "parse root int array[1]" {
     var doc = try parseString(std.testing.allocator, ".{ 1 }");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .array), doc.root);
+    try std.testing.expectEqual(NodeTag.array, @as(NodeTag, doc.root));
     try std.testing.expectEqual(@as(usize, 1), doc.root.array.len);
 
     for (0..1, 1..2) |index, val| {
@@ -778,7 +780,7 @@ test "parse root int array[1] trailing comma" {
     var doc = try parseString(std.testing.allocator, ".{ 1, }");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .array), doc.root);
+    try std.testing.expectEqual(NodeTag.array, @as(NodeTag, doc.root));
     try std.testing.expectEqual(@as(usize, 1), doc.root.array.len);
 
     for (0..1, 1..2) |index, val| {
@@ -790,7 +792,7 @@ test "parse root object[1]" {
     var doc = try parseString(std.testing.allocator, ".{ .x = 10 }");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .object), doc.root);
+    try std.testing.expectEqual(NodeTag.object, @as(NodeTag, doc.root));
     try std.testing.expectEqual(@as(usize, 1), doc.root.object.count());
 }
 
@@ -798,7 +800,7 @@ test "parse root object[1] trailing comma" {
     var doc = try parseString(std.testing.allocator, ".{ .x = 10, }");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .object), doc.root);
+    try std.testing.expectEqual(NodeTag.object, @as(NodeTag, doc.root));
     try std.testing.expectEqual(@as(usize, 1), doc.root.object.count());
 }
 
@@ -806,7 +808,7 @@ test "parse root object[2]" {
     var doc = try parseString(std.testing.allocator, ".{ .x = 10, .y = 20 }");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .object), doc.root);
+    try std.testing.expectEqual(NodeTag.object, @as(NodeTag, doc.root));
     try std.testing.expectEqual(@as(usize, 2), doc.root.object.count());
 }
 
@@ -814,18 +816,18 @@ test "parse root object[2] trailing comma" {
     var doc = try parseString(std.testing.allocator, ".{ .x = 10, .y = 20, }");
     defer doc.deinit();
 
-    try std.testing.expectEqual(@as(std.meta.Tag(Node), .object), doc.root);
+    try std.testing.expectEqual(NodeTag.object, @as(NodeTag, doc.root));
     try std.testing.expectEqual(@as(usize, 2), doc.root.object.count());
 }
 
 test "all test-data files" {
-    var dir = try std.fs.cwd().openIterableDir("test-data", .{});
+    var dir = try std.fs.cwd().openDir("test-data", .{ .iterate = true });
     defer dir.close();
 
     var iter = dir.iterate();
 
     while (try iter.next()) |item| {
-        const text = try dir.dir.readFileAlloc(std.testing.allocator, item.name, 1 << 20);
+        const text = try dir.readFileAlloc(std.testing.allocator, item.name, 1 << 20);
         defer std.testing.allocator.free(text);
 
         var doc = parseString(std.testing.allocator, text) catch |err| {

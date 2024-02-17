@@ -11,11 +11,13 @@ pub fn build(b: *std.Build) void {
     const ptk_mod = ptk_dep.module("parser-toolkit");
 
     _ = b.addModule("eggzon", .{
-        .source_file = .{ .path = "src/main.zig" },
-        .dependencies = &.{.{
-            .name = "parser-toolkit",
-            .module = ptk_mod,
-        }},
+        .root_source_file = .{ .path = "src/main.zig" },
+        .imports = &.{
+            .{
+                .name = "parser-toolkit",
+                .module = ptk_mod,
+            },
+        },
     });
 
     const main_tests = b.addTest(.{
@@ -24,7 +26,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    main_tests.addModule("parser-toolkit", ptk_mod);
+    main_tests.root_module.addImport("parser-toolkit", ptk_mod);
 
     const run_main_tests = b.addRunArtifact(main_tests);
 
