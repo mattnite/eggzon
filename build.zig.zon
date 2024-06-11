@@ -4,8 +4,8 @@
 
     .dependencies = .{
         .@"parser-toolkit" = .{
-            .url = "https://github.com/mattnite/parser-toolkit/archive/afbf2f609c1e1de362775d8ed401bc3672170b47.tar.gz",
-            .hash = "1220c351973930aa2774499bc8f0c82b75d12aa7564d9c158c897ad78c94bc1e4925",
+            .url = "https://github.com/mattnite/parser-toolkit/archive/cc45f782c919c6dc0d11a9e611bf2b9e4051ea2b.tar.gz",
+            .hash = "12202a69242ff41203ccd2f3cb8906effcbf0acfd315631615a50311d96e9445a685",
         },
     },
     .paths = .{

@@ -11,7 +11,7 @@ pub fn build(b: *std.Build) void {
     const ptk_mod = ptk_dep.module("parser-toolkit");
 
     _ = b.addModule("eggzon", .{
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .imports = &.{
             .{
                 .name = "parser-toolkit",
@@ -21,7 +21,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const main_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
