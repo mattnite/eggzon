@@ -2,14 +2,16 @@
     .name = .eggzon,
     .fingerprint = 0x75118d1ced3fe23c,
     .version = "0.1.1",
-
     .dependencies = .{
-        .@"parser-toolkit" = .{
-            .url = "git+https://github.com/mattnite/parser-toolkit.git#214ca0526eaec121d18f55266319fcded4518b64",
-            .hash = "N-V-__8AAHBAEwDMpKN4zOjO46bEQRfJwgG_YkJhQvkvUkR_",
+        .parser_toolkit = .{
+            .url = "git+https://github.com/mattnite/parser-toolkit#11b55ddb6dfb5ef2ec882d878cd7824af773937e",
+            .hash = "parser_toolkit-0.1.0-baYGPQVCEwD6kyfhjQftftBFitpQAb7RXLOPkWl_4X37",
         },
     },
     .paths = .{
-        "",
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE",
     },
 }

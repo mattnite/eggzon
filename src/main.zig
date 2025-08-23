@@ -53,7 +53,7 @@ fn parseInternal(arena: std.mem.Allocator, file_name: ?[]const u8, document: []c
         .core = ParserCore.init(&tokenizer),
     };
 
-    errdefer |e| std.debug.print("{}: {}\n", .{ tokenizer.current_location, e });
+    errdefer |e| std.debug.print("{f}: {}\n", .{ tokenizer.current_location, e });
 
     const node = try parseNode(arena, &parser);
 
@@ -65,7 +65,7 @@ fn parseInternal(arena: std.mem.Allocator, file_name: ?[]const u8, document: []c
 }
 
 fn parseNode(arena: std.mem.Allocator, parser: *Parser) error{ OutOfMemory, SyntaxError, UnexpectedCharacter, DuplicateKey, InvalidCharacter, Overflow, EndOfStream, UnexpectedToken }!Node {
-    var string_buffer = std.ArrayList(u8).init(arena);
+    var string_buffer = std.array_list.Managed(u8).init(arena);
     defer string_buffer.deinit();
 
     if (parser.acceptNull()) {
@@ -130,7 +130,7 @@ fn parseArray(arena: std.mem.Allocator, parser: *Parser) ![]Node {
     const s = parser.save();
     errdefer parser.restore(s);
 
-    var list = std.ArrayList(Node).init(arena);
+    var list = std.array_list.Managed(Node).init(arena);
     defer list.deinit();
 
     while (true) {
@@ -160,7 +160,7 @@ fn parseObject(arena: std.mem.Allocator, parser: *Parser) !std.StringArrayHashMa
     var object = std.StringArrayHashMapUnmanaged(Node){};
     errdefer object.deinit(arena);
 
-    var identifier_buffer = std.ArrayList(u8).init(arena);
+    var identifier_buffer = std.array_list.Managed(u8).init(arena);
     defer identifier_buffer.deinit();
 
     while (true) {
@@ -663,9 +663,9 @@ const StringTest = struct { []const u8, []const u8 };
 fn runStringTest(seq: []const StringTest) !void {
     for (seq) |pat| {
         var doc = parseString(std.testing.allocator, pat[1]) catch |err| {
-            std.debug.print("failed pattern({}) => \"{}\"\n", .{
+            std.debug.print("failed pattern({}) => \"{f}\"\n", .{
                 err,
-                std.zig.fmtEscapes(pat[1]),
+                std.zig.fmtString(pat[1]),
             });
             return err;
         };

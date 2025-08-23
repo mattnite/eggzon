@@ -7,11 +7,13 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const ptk_dep = b.dependency("parser-toolkit", .{});
+    const ptk_dep = b.dependency("parser_toolkit", .{});
     const ptk_mod = ptk_dep.module("parser-toolkit");
 
-    _ = b.addModule("eggzon", .{
+    const eggzon = b.addModule("eggzon", .{
         .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
         .imports = &.{
             .{
                 .name = "parser-toolkit",
@@ -21,9 +23,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const main_tests = b.addTest(.{
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = eggzon,
     });
 
     main_tests.root_module.addImport("parser-toolkit", ptk_mod);
